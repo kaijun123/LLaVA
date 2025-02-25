@@ -27,6 +27,7 @@ from llava.mm_utils import get_anyres_image_grid_shape
 
 
 class LlavaMetaModel:
+    '''The actual class that contains the '''
 
     def __init__(self, config):
         super(LlavaMetaModel, self).__init__(config)
@@ -47,6 +48,7 @@ class LlavaMetaModel:
         return vision_tower
 
     def initialize_vision_modules(self, model_args, fsdp=None):
+        '''Initializes the Vision Encoder and the Multi-modal MLP'''
         vision_tower = model_args.vision_tower
         mm_vision_select_layer = model_args.mm_vision_select_layer
         mm_vision_select_feature = model_args.mm_vision_select_feature
@@ -77,6 +79,7 @@ class LlavaMetaModel:
         self.config.mm_patch_merge_type = mm_patch_merge_type
 
         if getattr(self, 'mm_projector', None) is None:
+            # creates the mlp
             self.mm_projector = build_vision_projector(self.config)
 
             if 'unpad' in mm_patch_merge_type:
@@ -89,11 +92,19 @@ class LlavaMetaModel:
             for p in self.mm_projector.parameters():
                 p.requires_grad = True
 
+        # use pretrained weights for the multi-modal multi-layer perceptron
         if pretrain_mm_mlp_adapter is not None:
             mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
+   
             def get_w(weights, keyword):
+                '''
+                reads from model.safetensors.index.json, which stores the location of 
+                where the weights are stored for each of the layers (?)
+                obtains the location of where the weights are stored for specific layers
+                '''
                 return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
 
+            # load the pre-trained weights
             self.mm_projector.load_state_dict(get_w(mm_projector_weights, 'mm_projector'))
 
 
@@ -129,7 +140,9 @@ def unpad_image(tensor, original_size):
 
 
 class LlavaMetaForCausalLM(ABC):
-
+    '''Interface to interact with the model'''
+    
+    # Abstract method: implemented by the child class
     @abstractmethod
     def get_model(self):
         pass
@@ -138,6 +151,9 @@ class LlavaMetaForCausalLM(ABC):
         return self.get_model().get_vision_tower()
 
     def encode_images(self, images):
+        '''Convert the images into vision embeddings and then project it into the textual embeddings data space'''
+        # Calls the get_model() function of the child class that inherits this class
+        # The child class will have implemented the get_model abstract function
         image_features = self.get_model().get_vision_tower()(images)
         image_features = self.get_model().mm_projector(image_features)
         return image_features
@@ -146,15 +162,25 @@ class LlavaMetaForCausalLM(ABC):
         self, input_ids, position_ids, attention_mask, past_key_values, labels,
         images, image_sizes=None
     ):
+        '''
+        Prepare the image inputs. If there are multiple images, 
+        you will need to pad the tensors such that they are all of equal length.
+        And then encode the images.
+        Lastly, remove the padding (?). 
+        '''
         vision_tower = self.get_vision_tower()
         if vision_tower is None or images is None or input_ids.shape[1] == 1:
             return input_ids, position_ids, attention_mask, past_key_values, None, labels
 
+        # multiple images
         if type(images) is list or images.ndim == 5:
             if type(images) is list:
                 images = [x.unsqueeze(0) if x.ndim == 3 else x for x in images]
+            # concatenate the images
             concat_images = torch.cat([image for image in images], dim=0)
+            # encode the images
             image_features = self.encode_images(concat_images)
+            # split the images according to their size
             split_sizes = [image.shape[0] for image in images]
             image_features = torch.split(image_features, split_sizes, dim=0)
             mm_patch_merge_type = getattr(self.config, 'mm_patch_merge_type', 'flat')
@@ -198,6 +224,7 @@ class LlavaMetaForCausalLM(ABC):
                 image_features = new_image_features
             else:
                 raise ValueError(f"Unexpected mm_patch_merge_type: {self.config.mm_patch_merge_type}")
+        # single image
         else:
             image_features = self.encode_images(images)
 

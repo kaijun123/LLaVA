@@ -22,17 +22,21 @@ class CLIPVisionTower(nn.Module):
             self.cfg_only = CLIPVisionConfig.from_pretrained(self.vision_tower_name)
 
     def load_model(self, device_map=None):
+        '''Load the model'''
         if self.is_loaded:
             print('{} is already loaded, `load_model` called again, skipping.'.format(self.vision_tower_name))
             return
 
+        # CLIPImageProcessor only preprocesses the image (eg normalize the colours, crop, rotate, etc)
         self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
+        # Vision Encoder is found in the CLIPVisionModel
         self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True
 
     def feature_select(self, image_forward_outs):
+        '''Select the features that you want from the output'''
         image_features = image_forward_outs.hidden_states[self.select_layer]
         if self.select_feature == 'patch':
             image_features = image_features[:, 1:]
@@ -44,6 +48,7 @@ class CLIPVisionTower(nn.Module):
 
     @torch.no_grad()
     def forward(self, images):
+        '''Generates the visual embeddings from the image'''
         if type(images) is list:
             image_features = []
             for image in images:

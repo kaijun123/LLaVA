@@ -32,6 +32,7 @@ class LlavaConfig(LlamaConfig):
 
 
 class LlavaLlamaModel(LlavaMetaModel, LlamaModel):
+    '''Inherits both the LlavaMetaModel and LlamaModel. Contains references to both the textual and vision modules'''
     config_class = LlavaConfig
 
     def __init__(self, config: LlamaConfig):
@@ -43,6 +44,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
 
     def __init__(self, config):
         super(LlamaForCausalLM, self).__init__(config)
+        # instantiates the llava model using the LlavaLlamaModel class
         self.model = LlavaLlamaModel(config)
         self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
