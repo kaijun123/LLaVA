@@ -27,7 +27,7 @@ from llava.mm_utils import get_anyres_image_grid_shape
 
 
 class LlavaMetaModel:
-    '''The actual class that contains the '''
+    '''The actual class that contains the vision_tower and multi-modal MLP'''
 
     def __init__(self, config):
         super(LlavaMetaModel, self).__init__(config)
@@ -140,7 +140,7 @@ def unpad_image(tensor, original_size):
 
 
 class LlavaMetaForCausalLM(ABC):
-    '''Interface to interact with the model'''
+    '''Interface to interact with the LLava model'''
     
     # Abstract method: implemented by the child class
     @abstractmethod
