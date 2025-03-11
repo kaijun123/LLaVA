@@ -365,6 +365,8 @@ def test_validation_set(vision_tower_instance, classifier, val_loader):
         for _, (image_paths, labels_str) in enumerate(val_loader):
             ground_truths = torch.Tensor(convert_label_str(labels_str)).to(device)
             y_true.append(ground_truths)
+            print("len(ground_truths):", len(ground_truths))
+            print("ground_truths:", ground_truths)
             # print("ground_truths:", ground_truths)
 
             images = vision_tower_instance.preprocess(image_paths).to(device)
@@ -393,7 +395,7 @@ def load_existing_vision(path):
   return vision_tower_instance
 
 
-if __name__ == "main":
+if __name__ == "__main__":
   import utils
   print("testing out loading previously trained weights")
   print("loading classifier")
@@ -407,11 +409,21 @@ if __name__ == "main":
   )
   validation_dataloader = DataLoader(validation_data, batch_size=64, shuffle=True)
 
-  y_true, y_pred = test_validation_set(vision_tower_instance, classifier, validation_data)
-  print("accuracy score:", utils.calculate_accuracy(y_pred, y_true))
-  print("precision score:", utils.calculate_precision(y_pred, y_true))
-  print("recall score:", utils.calculate_recall(y_pred, y_true))
-  print("f1 score:", utils.calculate_f1(y_pred, y_true))
+  y_true, y_pred = test_validation_set(vision_tower_instance, classifier, validation_dataloader)
+
+  y_pred = utils.get_classification(y_pred).cpu()
+  y_true = utils.flatten(y_true).cpu()
+
+  from sklearn import metrics
+  accuracy_score = metrics.accuracy_score(y_pred=y_pred, y_true=y_true)
+  recall_score = metrics.recall_score(y_pred=y_pred, y_true=y_true)
+  precision_score = metrics.precision_score(y_pred=y_pred, y_true=y_true)
+  f1_score = metrics.f1_score(y_pred=y_pred, y_true=y_true)
+
+  print("accuracy score:", accuracy_score)
+  print("precision score:", precision_score)
+  print("recall score:", recall_score)
+  print("f1 score:", f1_score)
 
 
 # # Finetune the clip encoder
