@@ -29,6 +29,7 @@ from llava.mm_utils import get_anyres_image_grid_shape
 class LlavaMetaModel:
 
     def __init__(self, config):
+        print("llava LlavaMetaModel")
         super(LlavaMetaModel, self).__init__(config)
 
         if hasattr(config, "mm_vision_tower"):

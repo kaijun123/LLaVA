@@ -6,13 +6,23 @@ from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
 
 class CLIPVisionTower(nn.Module):
     def __init__(self, vision_tower, args, delay_load=False):
+        print("llava CLIPVisionTower")
         super().__init__()
-
-        self.is_loaded = False
-
         self.vision_tower_name = vision_tower
-        self.select_layer = args.mm_vision_select_layer
-        self.select_feature = getattr(args, 'mm_vision_select_feature', 'patch')
+        self.vision_tower_path = getattr(args, "vision_tower_path", "")
+        self.image_processor_path = getattr(args, "image_processor_path", "")
+        print("self.vision_tower_name:", self.vision_tower_name)
+        print("self.vision_tower_path:", self.vision_tower_path)
+        print("self.image_processor_path:", self.image_processor_path)
+
+        self.select_layer = getattr(args, "mm_vision_select_layer", -2)
+        print("self.select_layer:", self.select_layer)
+        self.select_feature = getattr(args, "mm_vision_select_feature", "patch")
+        # "cls_patch"
+        print("self.select_feature:", self.select_feature)
+        self.image_aspect_ratio = getattr(args, "image_aspect_ratio", "pad")
+        self.is_loaded = False
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         if not delay_load:
             self.load_model()
@@ -25,9 +35,17 @@ class CLIPVisionTower(nn.Module):
         if self.is_loaded:
             print('{} is already loaded, `load_model` called again, skipping.'.format(self.vision_tower_name))
             return
+                
+        if self.vision_tower_path == "" or self.image_processor_path == "":
+            print("self.vision_tower_name:", self.vision_tower_name)
+            self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
+            self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
+        else:
+            print("self.vision_tower_path:", self.vision_tower_path)
+            print("self.image_processor_path:", self.image_processor_path)
+            self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_path)
+            self.vision_tower = CLIPVisionModel.from_pretrained(self.image_processor_path, device_map=device_map)
 
-        self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
-        self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True
@@ -38,6 +56,8 @@ class CLIPVisionTower(nn.Module):
             image_features = image_features[:, 1:]
         elif self.select_feature == 'cls_patch':
             image_features = image_features
+        elif self.select_feature == 'cls':
+            image_features = image_features[:, 0]
         else:
             raise ValueError(f'Unexpected select feature: {self.select_feature}')
         return image_features
@@ -64,9 +84,9 @@ class CLIPVisionTower(nn.Module):
     def dtype(self):
         return self.vision_tower.dtype
 
-    @property
-    def device(self):
-        return self.vision_tower.device
+    # @property
+    # def device(self):
+    #     return self.vision_tower.device
 
     @property
     def config(self):
@@ -114,9 +134,17 @@ class CLIPVisionTowerS2(CLIPVisionTower):
         if self.is_loaded:
             print('{} is already loaded, `load_model` called again, skipping.'.format(self.vision_tower_name))
             return
+        
+        if self.vision_tower_path == "" or self.image_processor_path == "":
+            print("self.vision_tower_name:", self.vision_tower_name)
+            self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
+            self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
+        else:
+            print("self.vision_tower_path:", self.vision_tower_path)
+            print("self.image_processor_path:", self.image_processor_path)
+            self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_path)
+            self.vision_tower = CLIPVisionModel.from_pretrained(self.image_processor_path, device_map=device_map)
 
-        self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
-        self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
         self.vision_tower.requires_grad_(False)
 
         self.image_processor.size['shortest_edge'] = self.s2_image_size

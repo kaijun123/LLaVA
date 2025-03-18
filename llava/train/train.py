@@ -64,7 +64,8 @@ class ModelArguments:
     mm_use_im_patch_token: bool = field(default=True)
     mm_patch_merge_type: Optional[str] = field(default='flat')
     mm_vision_select_feature: Optional[str] = field(default="patch")
-
+    vision_tower_path: Optional[str] = field(default="/home/FYP/angk0064/ANGK0064/checkpoints/vision_tower-epoch-1-lr-0.0001")
+    image_processor_path: Optional[str] = field(default="/home/FYP/angk0064/ANGK0064/checkpoints/vision_tower-epoch-1-lr-0.0001")
 
 @dataclass
 class DataArguments:
@@ -787,10 +788,15 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
 
 def train(attn_implementation=None):
     global local_rank
+    print("llava directory")
 
     parser = transformers.HfArgumentParser(
         (ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    print("model_args:", model_args)
+    print("data_args:", data_args)
+    print("training_args:", training_args)
+
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
 
@@ -826,6 +832,8 @@ def train(attn_implementation=None):
         else:
             model = LlavaLlamaForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
+                model_args.image_processor_path,
+                model_args.vision_tower_path,
                 cache_dir=training_args.cache_dir,
                 attn_implementation=attn_implementation,
                 torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
