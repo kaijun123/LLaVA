@@ -42,7 +42,10 @@ class LlavaLlamaModel(LlavaMetaModel, LlamaModel):
 class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
     config_class = LlavaConfig
 
-    def __init__(self, config):
+    def __init__(self, config, vision_tower_path, image_processor_path):
+        print("llava LlavaLlamaForCausalLM")
+        setattr(config, "vision_tower_path", vision_tower_path)
+        setattr(config, "image_processor_path", image_processor_path)
         super(LlamaForCausalLM, self).__init__(config)
         # instantiates the llava model using the LlavaLlamaModel class
         self.model = LlavaLlamaModel(config)

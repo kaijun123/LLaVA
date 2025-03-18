@@ -30,6 +30,7 @@ class LlavaMetaModel:
     '''The actual class that contains the vision_tower and multi-modal MLP'''
 
     def __init__(self, config):
+        print("llava LlavaMetaModel")
         super(LlavaMetaModel, self).__init__(config)
 
         if hasattr(config, "mm_vision_tower"):
