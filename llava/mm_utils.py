@@ -166,8 +166,11 @@ def expand2square(pil_img, background_color):
 def process_images(images, image_processor, model_cfg):
     image_aspect_ratio = getattr(model_cfg, "image_aspect_ratio", None)
     new_images = []
+    print("image_processor.image_mean:", image_processor.image_mean)
+    print("image_aspect_ratio:", image_aspect_ratio)
     if image_aspect_ratio == 'pad':
         for image in images:
+            print("image_processor.image_mean:", image_processor.image_mean)
             image = expand2square(image, tuple(int(x*255) for x in image_processor.image_mean))
             image = image_processor.preprocess(image, return_tensors='pt')['pixel_values'][0]
             new_images.append(image)
