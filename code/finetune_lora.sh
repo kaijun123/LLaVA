@@ -1,29 +1,26 @@
 #!/bin/bash
 
-# NOTE: this bash script is running llava code using llava-med weights, and our own dataset
-# ALWAYS MAKE SURE TO CHANGE TO THE RIGHT CONDA ENV before running this script
-# conda activate llava
+# make sure that the correct conda environment is activated before running this script
+# Run `conda activate llava``
 
-# edited based on LLaVA/scripts/v1_5/finetune_task_lora.sh and LLaVA/scripts/finetune_qlora.sh
+# edited based on LLaVA/scripts/v1_5/finetune_task_lora.sh
 
 ##############################################################
 llava_dir=$HOME/LLaVA
-image_folder=$HOME/physionet.org/files/mimic-cxr-jpg/2.1.0/
-checkpoint_dir=/home/r11kaijun/LLaVA/checkpoints
-model_base=$checkpoint_dir/liuhaotian-llava-v1.5-7b
-vision_tower_path=$checkpoint_dir/vision_tower-epoch-1-lr-0.0001
-# openai/clip-vit-large-patch14-336
-image_processor_path=$checkpoint_dir/vision_tower-epoch-1-lr-0.0001
-# openai/clip-vit-large-patch14-336
-##############################################################
-# changed version back to v1
-version=v1
+image_folder=$HOME/
+checkpoint_dir=$llava_dir/checkpoints
+model_base=$checkpoint_dir/
+model_name=
+vision_tower_path=$checkpoint_dir/
+image_processor_path=$checkpoint_dir/
 deepspeed_config=$llava_dir/scripts/zero2.json
+##############################################################
+version=v1
 data_file=train_28k_custom
 data_path=$HOME/MIMIC-CXR/processed_data/${data_file}.json
 epoch=2
 lr=6e-5
-output_dir=$checkpoint_dir/lora-liuhaotian-llava-v1.5-7b-vision_tower-epoch-1-lr-0.0001-${data_file}-train-mlp-and-llm-unquantized-epoch-${epoch}-lr-${lr}
+output_dir=$checkpoint_dir/lora-${model_name}-${data_file}-train-mlp-and-llm-unquantized-epoch-${epoch}-lr-${lr}
 ##############################################################
 
 

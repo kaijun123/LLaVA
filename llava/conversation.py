@@ -239,6 +239,10 @@ conv_vicuna_v0 = Conversation(
     sep="###",
 )
 
+"""
+conv_vicuna_v1 is used in this work, with deliberate reference to llava-v1.5 training scripts. 
+The only difference is that the system message has been edited
+"""
 conv_vicuna_v1 = Conversation(
     system="You are a helpful radiology assistant. You are being provided with an image and a question, answer the given question.",
     # system="A chat between a curious user and an artificial intelligence assistant. "
