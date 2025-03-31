@@ -131,8 +131,8 @@ def validate(data_path, image_base_path, model, tokenizer, image_processor, outp
 
     for data in list_data_dict:
         study_id = data["id"]
-        image_url = os.path.join(image_base_path, data["image"])
-        print("image_url:", image_url)
+        image_path = os.path.join(image_base_path, data["image"])
+        print("image_path:", image_path)
         conv = data["conversations"]
         question = conv[0]["value"]
         ground_truth = conv[1]["value"]
@@ -140,7 +140,7 @@ def validate(data_path, image_base_path, model, tokenizer, image_processor, outp
             model=model,
             tokenizer=tokenizer,
             image_processor=image_processor,
-            image_url=image_url,
+            image_path=image_path,
             question=question,
         )
 
@@ -148,7 +148,7 @@ def validate(data_path, image_base_path, model, tokenizer, image_processor, outp
             {
                 "study_id": study_id,
                 "prompt": question,
-                "image": image_url,
+                "image": image_path,
                 "ground_truth": ground_truth,
                 "prediction": prediction,
             }
@@ -156,7 +156,7 @@ def validate(data_path, image_base_path, model, tokenizer, image_processor, outp
         print(
             "study_id", study_id, "\n"
             "prompt", question, "\n"
-            "image", image_url, "\n"
+            "image", image_path, "\n"
             "ground_truth", ground_truth, "\n"
             "prediction", prediction, "\n"
         )

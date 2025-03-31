@@ -1,4 +1,4 @@
-from util import validate
+from utils import validate
 from llava.model.builder import load_pretrained_model
 import argparse
 
