@@ -29,6 +29,9 @@ pip install flash-attn --no-build-isolation
 - Note: cuda-12.4 was used
 
 ### Code Intro:
-- `code/util.py`: contains utility code
+- `code/utils.py`: contains utility code
 - `code/validate.py`: code to obtain the generated output for evaluation of model performance
 - `code/merge_lora_weights.py`: merge lora weights with pretrained weights
+- `code/configure.py`: contains code to replace the vision tower of a pretrained model with a finetuned vision encoder
+
+Corresponding bash scripts and slurm jobscripts have been added for reference. Edit the paths whenever necessary.
