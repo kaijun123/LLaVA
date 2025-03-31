@@ -1,10 +1,36 @@
 #!/bin/bash
 
-export llava_dir=$HOME/LLaVA
+### TC1 Job Script ###
+ 
+#SBATCH --partition=UGGPU-TC1
+#SBATCH --qos=normal
+#SBATCH --gres=gpu:1
 
-export PYTHONPATH=$llava_dir:$PYTHONPATH
+### Specify Memory allocate to this job ###
+#SBATCH --mem=20G
 
-### Fill in the necessary paths to merge the weights
+### Specify number of core (CPU) to allocate to per node ###
+#SBATCH --ntasks-per-node=1
+
+### Specify number of node to compute ###
+#SBATCH --nodes=1
+
+### Optional: Specify node to execute the job ###
+### Remove 1st # at next line for the option to take effect ###
+##SBATCH --nodelist=TC1N07
+
+### Specify Time Limit, format: <min> or <min>:<sec> or <hr>:<min>:<sec> or <days>-<hr>:<min>:<sec> or <days>-<hr> ### 
+#SBATCH --time=360
+
+### Specify name for the job, filename format for output and error ###
+#SBATCH --job-name=TestJob
+SBATCH --output=output_%x_%j.out
+SBATCH --error=error_%x_%j.err
+
+### Your script for computation ###
+module load anaconda
+source activate llava
+
 model_name=microsoft-llava-med-v1.5-mistral-7b-train_28k_custom-train-mlp-and-llm-unquantized-epoch-2-lr-6e-5
 model_base=/home/FYP/angk0064/ANGK0064/checkpoints/microsoft-llava-med-v1.5-mistral-7b-train_28k_custom-train-mlp-and-llm-unquantized-epoch-2-lr-6e-5
 lora_adapter=/home/FYP/angk0064/ANGK0064/checkpoints/lora-microsoft-llava-med-v1.5-mistral-7b-train_28k_custom-train-mlp-and-llm-unquantized-epoch-3-lr-6e-5
