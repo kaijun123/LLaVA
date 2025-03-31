@@ -5,18 +5,18 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", type=str, default="liuhaotian/llava-v1.5-7b")
-    parser.add_argument("--model_base", type=str, default=None)
-    parser.add_argument("--model_name", type=str, default="llava-v1.5-7b")
-    parser.add_argument("--image_processor_path", type=str, default="openai/clip-vit-large-patch14-336")
-    parser.add_argument("--vision_tower_path", type=str, default="openai/clip-vit-large-patch14-336")
-    parser.add_argument("--image-base-path", type=str, default="/images")
-    parser.add_argument("--question-file", type=str, default="question.json")
-    parser.add_argument("--answers-file", type=str, default="answer.json")
+    parser.add_argument("--model_path", type=str, required=True)
+    parser.add_argument("--model_base", type=str, required=True)
+    parser.add_argument("--model_name", type=str, required=True)
+    parser.add_argument("--image_processor_path", type=str, required=True)
+    parser.add_argument("--vision_tower_path", type=str, required=True)
+    parser.add_argument("--image-base-path", type=str, required=True)
+    parser.add_argument("--question-file", type=str, required=True)
+    parser.add_argument("--answers-file", type=str, required=True)
     args = parser.parse_args()
 
     model_path=args.model_path
-    model_base=args.model_base
+    model_base=args.model_base if args.model_base != "" else None
     model_name=args.model_name
     image_processor_path=args.image_processor_path
     vision_tower_path=args.vision_tower_path
