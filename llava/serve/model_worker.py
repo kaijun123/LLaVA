@@ -45,6 +45,7 @@ class ModelWorker:
     def __init__(self, controller_addr, worker_addr,
                  worker_id, no_register,
                  model_path, model_base, model_name,
+                 image_processor_path, vision_tower_path,
                  load_8bit, load_4bit, device, use_flash_attn=False):
         self.controller_addr = controller_addr
         self.worker_addr = worker_addr
@@ -63,7 +64,12 @@ class ModelWorker:
         self.device = device
         logger.info(f"Loading the model {self.model_name} on worker {worker_id} ...")
         self.tokenizer, self.model, self.image_processor, self.context_len = load_pretrained_model(
-            model_path, model_base, self.model_name, load_8bit, load_4bit, device=self.device, use_flash_attn=use_flash_attn)
+            model_path, model_base, self.model_name, 
+            
+
+            image_processor_path, vision_tower_path, 
+            
+            load_8bit, load_4bit, device=self.device, use_flash_attn=use_flash_attn)
         self.is_multimodal = 'llava' in self.model_name.lower()
 
         if not no_register:
@@ -260,6 +266,8 @@ if __name__ == "__main__":
     parser.add_argument("--model-path", type=str, default="facebook/opt-350m")
     parser.add_argument("--model-base", type=str, default=None)
     parser.add_argument("--model-name", type=str)
+    parser.add_argument("--image-processor-path", type=str, default=None)
+    parser.add_argument("--vision-tower-path", type=str, default=None)
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--multi-modal", action="store_true", help="Multimodal mode is automatically detected with model name, please make sure `llava` is included in the model path.")
     parser.add_argument("--limit-model-concurrency", type=int, default=5)
@@ -281,6 +289,8 @@ if __name__ == "__main__":
                          args.model_path,
                          args.model_base,
                          args.model_name,
+                         args.image_processor_path,
+                         args.vision_tower_path,
                          args.load_8bit,
                          args.load_4bit,
                          args.device,
